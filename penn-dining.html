@@ -20,7 +20,7 @@
   --hbtn-bg:#ffffff; --hbtn-fg:#000000; --hbtn-img:invert(1); --hbtn-shadow:0 2px 8px rgba(0,0,0,.18);
   --chip-bg:#d3d3d3; --tab-on:var(--blue); --tab-line:#d3d3d3; --hall-name:#141414; --scrim:rgba(76,76,76,.5);
   --nut-bg:#ffffff; --nut-line:rgba(76,76,76,.5); --nut-alt:#d3d3d3; --ing-bg:#d3d3d3; --pill-k:#000000;
-  --icon:#1c1c1c; --box:#f2f2f2; --box-alt:#e4e4e4; --box-line:#a8a8a8; --on-blue:#ffffff; --hall-sheet:#ffffff;
+  --icon:#1c1c1c; --box:#f2f2f2; --box-alt:#e4e4e4; --box-line:#a8a8a8; --on-blue:#000000; --hall-sheet:#ffffff;
   --station-border:#d3d3d3; --chev-filter:invert(1); --chart-grid:#ececec; --alert:#d64545;
   --kb-bg:#e9ecf0; --kb-key:#ffffff; --kb-key-down:#cfd4db; --kb-fn:#d5dae1; --kb-fn-down:#bfc5ce; --kb-fg:#1f1f1f;
   --shadow:0 0 8px 4px rgba(0,0,0,.08); --shadow-sm:0 0 8px 4px rgba(0,0,0,.08);
@@ -108,7 +108,7 @@ svg{display:block;flex:none}
 .hc-name{font-size:17.12px;font-weight:500;line-height:21px;margin:3px 0 3px}
 .hc-hours{display:flex;gap:4px}
 .hc-hours span{height:22px;padding:0 5px;border-radius:4.28px;font-size:14.98px;line-height:22px;background:var(--grey-chip);color:#000}
-.hc-hours .now{background:var(--green-chip);color:#fff}
+.hc-hours .now{background:var(--green-chip);color:var(--on-blue)}
 .hc-info svg{margin-top:25px}
 
 /* Search (Android Compact - 3) */
@@ -142,9 +142,8 @@ svg{display:block;flex:none}
 .hall-h{display:flex;align-items:center;justify-content:space-between;width:100%;height:56px;padding:0 8px;box-sizing:border-box}
 .hall-h.closed{border-bottom:1px solid var(--card-line);height:57px}
 .hall-h .n{font-size:18px;font-weight:700;line-height:22px;text-transform:uppercase;color:var(--hall-name)}
-.hall-h .pm{display:none}
-:root:not([data-theme="dark"]) .hall-h .pm{display:block}
-:root:not([data-theme="dark"]) .hall-h .chev{display:none}
+.hall-h .chev{display:none}
+.hall-h .pm{display:block}
 .stations{display:flex;flex-direction:column;gap:16px;margin:16px 0 24px}
 .station{background:var(--card);border:1px solid var(--station-border);border-radius:8px}
 .st-h{display:flex;align-items:center;justify-content:space-between;width:100%;height:35px;padding:0 13px 0 17px;box-sizing:border-box;font-size:16px;font-weight:600;line-height:19px}
@@ -406,7 +405,7 @@ const PATH = {
   fullscreen:'M22 3.41 16.71 8.7 20 12h-8V4l3.29 3.29L20.59 2 22 3.41zM3.41 22l5.29-5.29L12 20v-8H4l3.29 3.29L2 20.59 3.41 22z'
 };
 const ic = (n, s = 24, c = 'currentColor') => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" aria-hidden="true"><path d="${PATH[n]}" fill="${c}"/></svg>`;
-const circlePM = open => `<svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#141414"/><path d="${open ? 'M7.5 12h9' : 'M7.5 12h9M12 7.5v9'}" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>`;
+const circlePM = open => `<svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" style="fill:var(--hall-name)"/><path d="${open ? 'M7.5 12h9' : 'M7.5 12h9M12 7.5v9'}" style="stroke:var(--bg)" stroke-width="2" stroke-linecap="round"/></svg>`;
 const plusMinus = open => `<svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="11" fill="#fff"/><path d="${open ? 'M6 11h10' : 'M6 11h10M11 6v10'}" stroke="#0c0c0c" stroke-width="2.2" stroke-linecap="round"/></svg>`;
 const allergenIcon = (s = 14) => `<svg width="${s}" height="${s}" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1.5c3 0 5.5 2.4 5.5 5.5S10 12.5 7 12.5 1.5 10 1.5 7 4 1.5 7 1.5z" fill="none" stroke="#fff" stroke-width="1"/><circle cx="5.5" cy="5.5" r="2" fill="none" stroke="#fff" stroke-width="1"/></svg>`;
 const laundryIcon = `<svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><path d="M11 9c2.5 3.6 4.5 6.3 4.5 9a4.5 4.5 0 0 1-9 0c0-2.7 2-5.4 4.5-9z" fill="currentColor"/><circle cx="18" cy="4" r="3.5" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="21" cy="11" r="1.8" fill="none" stroke="currentColor" stroke-width="1.1"/><circle cx="3.5" cy="8" r="2.6" fill="none" stroke="currentColor" stroke-width="1.1"/></svg>`;
@@ -655,7 +654,7 @@ function renderHall() {
   return `<div class="h-bar ${fchips ? 'has-chips' : ''}" id="hBar"><div class="hb-bg"></div>
       <button class="h-back" data-a="back" aria-label="Back"><img src="assets/back.svg" width="24" height="24" alt=""></button>
       <div class="hb-search">
-        <label class="hb-q ${S.hallQuery ? 'has-q' : ''}">${ic('search', 24)}<input id="hq" type="search" autocomplete="off" enterkeyhint="search" inputmode="none" placeholder="Search ${esc(h.name)}" aria-label="Search the ${esc(h.name)} menu" value="${esc(S.hallQuery)}"><button class="hb-x" type="button" data-a="hall-q-clear" aria-label="Clear search">${ic('close', 18)}</button></label>
+        <label class="hb-q ${S.hallQuery ? 'has-q' : ''}">${ic('search', 24)}<input id="hq" type="search" autocomplete="off" enterkeyhint="search" inputmode="none" placeholder="Search" aria-label="Search the ${esc(h.name)} menu" value="${esc(S.hallQuery)}"><button class="hb-x" type="button" data-a="hall-q-clear" aria-label="Clear search">${ic('close', 18)}</button></label>
         <button class="hb-f" data-a="hall-filter" aria-label="Filter">${ic('tune', 24)}</button>
       </div>
       ${fchips ? `<div class="hb-chips" aria-label="Active filters">${fchips}</div>` : ''}
@@ -804,10 +803,12 @@ function closeSheet() { S.sheet = null; wrap.classList.remove('open'); }
 function refreshFilter() { const b = sheet.querySelector('.f-body'), y = b ? b.scrollTop : 0; sheet.innerHTML = filterHtml(); sheet.querySelector('.f-body').scrollTop = y; }
 
 /* ---------- Navigation ---------- */
+/* Stations start expanded: every station of an open hall is open */
+const openStations = hallId => { const h = HALLS.find(x => x.id === hallId); if (h) h.stations.forEach(([st]) => S.openS.add(hallId + '|' + st)); };
 function resetOpen() {
   S.openH = new Set(); S.openS = new Set();
   if (S.query) results().forEach(it => { S.openH.add(it.hallId); S.openS.add(it.hallId + '|' + it.station); });
-  else if (S.tab !== 'All') S.openH.add(S.tab);
+  else if (S.tab !== 'All') { S.openH.add(S.tab); openStations(S.tab); }
 }
 function render(keepScroll) {
   const y = screen.scrollTop, oldBar = document.getElementById('hBar'), wasSolid = keepScroll && S.view === 'hall' && oldBar && oldBar.classList.contains('solid');
@@ -862,7 +863,7 @@ const A = {
   'toggle-fav': () => { const h = HALLS.find(x => x.id === S.hallId); h.fav = !h.fav; render(true); },
   'hall-filter': () => { openSheet('filter'); Object.assign(S.draft, {meal:S.hallMeal, date:S.hallDate, diets:new Set(S.hf.diets), excl:new Set(S.hf.excl)}); refreshFilter(); },
   'tab': el => { S.tab = el.dataset.id; resetOpen(); render(); },
-  'toggle-hall': el => { const id = el.dataset.id; S.openH.has(id) ? S.openH.delete(id) : S.openH.add(id); render(true); },
+  'toggle-hall': el => { const id = el.dataset.id; if (S.openH.has(id)) S.openH.delete(id); else { S.openH.add(id); openStations(id); } render(true); },
   'toggle-station': el => { const id = el.dataset.id; S.openS.has(id) ? S.openS.delete(id) : S.openS.add(id); render(true); },
   'item': el => openSheet('detail', el.dataset.id),
   'rm-diet': el => { (S.view === 'hall' ? S.hf : S.f).diets.delete(el.dataset.v); resetOpen(); render(true); },
@@ -938,7 +939,7 @@ function drawKbd() {
   kbd.innerHTML = `<div class="krow">${R[0].map(key).join('')}</div>
     <div class="krow ${KB.sym ? '' : 'mid'}">${R[1].map(key).join('')}</div>
     <div class="krow"><button class="k fn ${KB.shift && !KB.sym ? 'on' : ''}" data-k="shift" aria-label="Shift">${KB.sym ? '=\\<' : kIcon(KB.shift ? K_SHIFT_ON : K_SHIFT)}</button>${R[2].map(key).join('')}<button class="k fn" data-k="back" aria-label="Backspace">${kIcon(K_BACK)}</button></div>
-    <div class="krow"><button class="k fn" data-k="sym" aria-label="${KB.sym ? 'Letters' : 'Numbers and symbols'}">${KB.sym ? 'ABC' : '?123'}</button>${key(',')}<button class="k sp" data-k=" " aria-label="Space"></button>${key('.')}<button class="k go" data-k="enter" aria-label="Search">${ic('search', 22, '#fff')}</button></div>`;
+    <div class="krow"><button class="k fn" data-k="sym" aria-label="${KB.sym ? 'Letters' : 'Numbers and symbols'}">${KB.sym ? 'ABC' : '?123'}</button>${key(',')}<button class="k sp" data-k=" " aria-label="Space"></button>${key('.')}<button class="k go" data-k="enter" aria-label="Search">${ic('search', 22, '#000')}</button></div>`;
 }
 kbd.addEventListener('pointerdown', e => {
   const b = e.target.closest('[data-k]'); if (!b) return;
