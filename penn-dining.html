@@ -261,7 +261,7 @@ html.theme-vt::view-transition-new(root){animation:theme-reveal .6s cubic-bezier
 .hero{position:relative;height:265px;background:#cfcfcf url(assets/hall-hero.png) center/cover}
 .h-bar{position:sticky;top:-1px;height:0;z-index:4}
 /* collapsed: three floating circles over the photo; .solid (scrolled): white bar, full search field, section strip */
-.hb-bg{position:absolute;left:0;right:0;top:-2px;height:68px;background:var(--bg);box-shadow:0 1px 0 var(--card-line);opacity:0;transition:opacity .25s,height .3s cubic-bezier(.2,.8,.2,1)}
+.hb-bg{position:absolute;left:0;right:0;top:-2px;height:68px;background:var(--hall-sheet);box-shadow:0 1px 0 var(--card-line);opacity:0;transition:opacity .25s,height .3s cubic-bezier(.2,.8,.2,1)}
 .h-bar.solid .hb-bg{opacity:1;height:112px}
 .h-bar.solid.has-chips .hb-bg{height:146px}
 .hb-chips{position:absolute;left:0;right:0;top:62px;display:flex;gap:8px;padding:0 16px;overflow-x:auto;scrollbar-width:none;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .25s,transform .3s cubic-bezier(.2,.8,.2,1)}
@@ -482,7 +482,7 @@ const fmt = d => d.toLocaleDateString('en-US', {month:'long', day:'numeric', yea
 
 /* ---------- State ---------- */
 const S = {view:'home', stack:[], query:'', tab:'All', f:{date:0, meal:'Dinner', diets:new Set(), excl:new Set()}, draft:null, sheet:null, openH:new Set(), openS:new Set(),
-  homeTab:'halls', hallId:null, hallQuery:'', hallMeal:'Brunch', hallDate:0, closedS:new Set(), plan:{dd:'', sw:''}};
+  homeTab:'halls', hallId:null, hallQuery:'', hf:{diets:new Set(), excl:new Set()}, hallMeal:'Brunch', hallDate:0, closedS:new Set(), plan:{dd:'', sw:''}};
 let recents = ['Chicken', 'Rice'];
 try { const r = JSON.parse(localStorage.getItem('pd-recents') || 'null'); if (Array.isArray(r)) recents = r; } catch (e) {}
 const saveRecents = () => { try { localStorage.setItem('pd-recents', JSON.stringify(recents)); } catch (e) {} };
@@ -615,12 +615,12 @@ const HALL_MEALS = [['Brunch', '10 am - 3 pm', ['Breakfast', 'Lunch']], ['Dinner
 /* Dining hall menu list; S.hallQuery filters it in place (only this hall's menu) */
 const qMatch = (text, q) => { const t = text.toLowerCase(); return q.toLowerCase().split(/\s+/).filter(Boolean).every(w => t.includes(w)); };
 function hallListHtml(h, meal) {
-  const q = S.hallQuery.trim(), filt = S.f.diets.size + S.f.excl.size > 0; let list = ''; const secs = [];
+  const q = S.hallQuery.trim(), filt = S.hf.diets.size + S.hf.excl.size > 0; let list = ''; const secs = [];
   for (const [st, meals] of h.stations) {
     if (!meals.some(m => meal[2].includes(m))) continue;
     const key = h.id + '|' + st;
     let its = ITEMS.filter(it => it.hallId === h.id && it.station === st);
-    if (filt) { its = its.filter(it => [...S.f.diets].every(d => DIET_OK[d](it)) && ![...S.f.excl].some(a => it.alg.includes(a))); if (!its.length) continue; }
+    if (filt) { its = its.filter(it => [...S.hf.diets].every(d => DIET_OK[d](it)) && ![...S.hf.excl].some(a => it.alg.includes(a))); if (!its.length) continue; }
     if (q) { its = qMatch(st, q) ? its : its.filter(it => qMatch(it.name, q)); if (!its.length) continue; }
     const open = (q || filt) ? true : !S.closedS.has(key);
     secs.push(st);
@@ -633,7 +633,7 @@ function hallListHtml(h, meal) {
 }
 function holdHallHeight() {
   const l = screen.querySelector('.h-list'); if (!l) return;
-  const on = !!S.hallQuery.trim() || S.f.diets.size + S.f.excl.size > 0;
+  const on = !!S.hallQuery.trim() || S.hf.diets.size + S.hf.excl.size > 0;
   const kb = kbd.hidden ? 0 : kbd.offsetHeight;          /* keep enough height for when the keyboard closes again */
   l.style.minHeight = on ? Math.max(parseFloat(l.style.minHeight) || 0, screen.clientHeight + kb - barH() + 8) + 'px' : '';
 }
@@ -650,8 +650,8 @@ function renderHall() {
   const h = HALLS.find(x => x.id === S.hallId);
   const meal = HALL_MEALS.find(m => m[0] === S.hallMeal) || HALL_MEALS[0];
   const {list, secs} = hallListHtml(h, meal);
-  const fchips = [...S.f.diets].map(v => `<button class="chip sel" data-a="rm-diet" data-v="${v}" aria-label="Remove filter: only ${v}">Only ${v} ${ic('close', 16)}</button>`).join('')
-    + [...S.f.excl].map(v => `<button class="chip sel" data-a="rm-excl" data-v="${v}" aria-label="Remove filter: no ${EXCL_LABEL[v]}">No ${EXCL_LABEL[v]} ${ic('close', 16)}</button>`).join('');
+  const fchips = [...S.hf.diets].map(v => `<button class="chip sel" data-a="rm-diet" data-v="${v}" aria-label="Remove filter: only ${v}">Only ${v} ${ic('close', 16)}</button>`).join('')
+    + [...S.hf.excl].map(v => `<button class="chip sel" data-a="rm-excl" data-v="${v}" aria-label="Remove filter: no ${EXCL_LABEL[v]}">No ${EXCL_LABEL[v]} ${ic('close', 16)}</button>`).join('');
   return `<div class="h-bar ${fchips ? 'has-chips' : ''}" id="hBar"><div class="hb-bg"></div>
       <button class="h-back" data-a="back" aria-label="Back"><img src="assets/back.svg" width="24" height="24" alt=""></button>
       <div class="hb-search">
@@ -853,21 +853,21 @@ const A = {
   'run-input': () => { closeSheet(); runSearch(document.getElementById('q').value); },
   'rm-recent': el => { recents = recents.filter(r => r !== el.dataset.q); saveRecents(); document.getElementById('recent').innerHTML = recentHtml(document.getElementById('q').value); },
   'hall-q-clear': () => { const i = document.getElementById('hq'); S.hallQuery = ''; if (i) i.value = ''; updateHallList(); },
-  'open-hall': el => { S.hallQuery = ''; S.hallId = el.dataset.id; S.hallMeal = 'Brunch'; S.hallDate = S.f.date; S.closedS = new Set(); go('hall'); },
+  'open-hall': el => { S.hallQuery = ''; S.hf = {diets:new Set(), excl:new Set()}; S.hallId = el.dataset.id; S.hallMeal = 'Brunch'; S.hallDate = S.f.date; S.closedS = new Set(); go('hall'); },
   'home-tab': el => { S.homeTab = el.dataset.id; render(); },
   'hall-meal': el => { S.hallMeal = el.dataset.v; render(true); },
   'toggle-hall-station': el => { const id = el.dataset.id; S.closedS.has(id) ? S.closedS.delete(id) : S.closedS.add(id); render(true); },
   'jump-sec': el => jumpSec(el.dataset.i),
   'open-hours': () => openSheet('hours', S.hallId),
   'toggle-fav': () => { const h = HALLS.find(x => x.id === S.hallId); h.fav = !h.fav; render(true); },
-  'hall-filter': () => { openSheet('filter'); S.draft.meal = S.hallMeal; S.draft.date = S.hallDate; refreshFilter(); },
+  'hall-filter': () => { openSheet('filter'); Object.assign(S.draft, {meal:S.hallMeal, date:S.hallDate, diets:new Set(S.hf.diets), excl:new Set(S.hf.excl)}); refreshFilter(); },
   'tab': el => { S.tab = el.dataset.id; resetOpen(); render(); },
   'toggle-hall': el => { const id = el.dataset.id; S.openH.has(id) ? S.openH.delete(id) : S.openH.add(id); render(true); },
   'toggle-station': el => { const id = el.dataset.id; S.openS.has(id) ? S.openS.delete(id) : S.openS.add(id); render(true); },
   'item': el => openSheet('detail', el.dataset.id),
-  'rm-diet': el => { S.f.diets.delete(el.dataset.v); resetOpen(); render(true); },
-  'rm-excl': el => { S.f.excl.delete(el.dataset.v); resetOpen(); render(true); },
-  'clear-filters': () => { S.f.diets.clear(); S.f.excl.clear(); resetOpen(); render(S.view === 'hall'); },
+  'rm-diet': el => { (S.view === 'hall' ? S.hf : S.f).diets.delete(el.dataset.v); resetOpen(); render(true); },
+  'rm-excl': el => { (S.view === 'hall' ? S.hf : S.f).excl.delete(el.dataset.v); resetOpen(); render(true); },
+  'clear-filters': () => { const f = S.view === 'hall' ? S.hf : S.f; f.diets.clear(); f.excl.clear(); resetOpen(); render(S.view === 'hall'); },
   'clear-results-q': () => { S.query = ''; resetOpen(); render(); },
   'd-meal': el => {
     S.draft.meal = el.dataset.v;
@@ -879,9 +879,9 @@ const A = {
   'f-save': () => {
     if (S.view === 'hall') {
       S.hallMeal = S.draft.meal; S.hallDate = S.draft.date;
-      S.f = {...S.draft, meal: S.draft.meal === 'Dinner' ? 'Dinner' : 'Lunch'};   /* keep the shared filter on Breakfast/Lunch/Dinner */
+      S.hf = {diets: S.draft.diets, excl: S.draft.excl};   /* hall filters are separate from the Search Menus filters */
       closeSheet(); render(true);
-      if (S.f.diets.size + S.f.excl.size && !pastMealTabs()) scrollPastTabs(true);   /* bring the filtered menu up under the bar */
+      if (S.hf.diets.size + S.hf.excl.size && !pastMealTabs()) scrollPastTabs(true);   /* bring the filtered menu up under the bar */
       return;
     }
     S.f = S.draft; closeSheet();
@@ -993,7 +993,7 @@ screen.addEventListener('scroll', () => { const b = document.getElementById('hBa
 /* Section strip on the dining hall page: highlight the section under the pinned bar, slide the underline to it */
 let spyLock = 0;
 const barH = () => document.querySelector('.h-bar.has-chips') ? 154 : 120;
-function hallSolid() { return pastMealTabs() || !!S.hallQuery || S.f.diets.size + S.f.excl.size > 0 || (document.activeElement && document.activeElement.id === 'hq'); }
+function hallSolid() { return pastMealTabs() || !!S.hallQuery || S.hf.diets.size + S.hf.excl.size > 0 || (document.activeElement && document.activeElement.id === 'hq'); }
 function scrollPastTabs(smooth) {
   const t = screen.querySelector('.meal-tabs'); if (!t) return;
   const top = screen.scrollTop + (t.getBoundingClientRect().bottom - screen.getBoundingClientRect().top) / screenScale() - 60;
